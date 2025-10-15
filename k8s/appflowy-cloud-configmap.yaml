@@ -1,0 +1,42 @@
+# 02-configmap.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: appflowy-cloud-config
+  namespace: appflowy
+data:
+  # Domain Configuration
+  FQDN: "appflowy.triggeriq.eu"
+  SCHEME: "https"
+  WS_SCHEME: "wss"
+
+  # AppFlowy URLs
+  APPFLOWY_BASE_URL: "https://appflowy.triggeriq.eu"
+  APPFLOWY_WEBSOCKET_BASE_URL: "wss://appflowy.triggeriq.eu/ws/v2"
+  APPFLOWY_WEB_URL: "https://appflowy.triggeriq.eu"
+
+  # Database
+  POSTGRES_HOST: "postgres"
+  POSTGRES_PORT: "5432"
+  POSTGRES_DB: "appflowy"
+
+  # Redis
+  REDIS_HOST: "redis"
+  REDIS_PORT: "6379"
+
+  # MinIO
+  MINIO_HOST: "minio"
+  MINIO_PORT: "9000"
+
+  # AppFlowy Cloud Configuration
+  APPFLOWY_ACCESS_CONTROL: "true"
+  APPFLOWY_S3_USE_MINIO: "true"
+  APPFLOWY_S3_CREATE_BUCKET: "true"
+  APPFLOWY_S3_BUCKET: "appflowy"
+
+  # GoTrue Configuration
+  GOTRUE_MAILER_AUTOCONFIRM: "true"
+  GOTRUE_DISABLE_SIGNUP: "false"
+
+  # Logging
+  RUST_LOG: "info"
