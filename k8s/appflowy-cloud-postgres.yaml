@@ -30,6 +30,21 @@ spec:
                   key: postgres-password
             - name: POSTGRES_DB
               value: "appflowy"
+            # === MEMORY OPTIMIZATION SETTINGS ===
+            - name: POSTGRESQL_SHARED_BUFFERS
+              value: "64MB"           # Reduced from default ~128MB
+            - name: POSTGRESQL_EFFECTIVE_CACHE_SIZE
+              value: "256MB"          # Tuned for limited memory
+            - name: POSTGRESQL_MAINTENANCE_WORK_MEM
+              value: "32MB"           # Reduced from default 64MB
+            - name: POSTGRESQL_WORK_MEM
+              value: "2MB"            # Reduced from default 4MB
+            - name: POSTGRESQL_MAX_CONNECTIONS
+              value: "50"             # Limit connections to control memory
+            - name: POSTGRESQL_RANDOM_PAGE_COST
+              value: "1.1"            # Optimize for SSD storage
+            - name: POSTGRESQL_EFFECTIVE_IO_CONCURRENCY
+              value: "200"            # Optimize for Scaleway BSDS
           ports:
             - containerPort: 5432
           volumeMounts:
@@ -37,15 +52,44 @@ spec:
               name: postgres-data
           resources:
             requests:
-              memory: "256Mi"
-              cpu: "100m"
+              memory: "128Mi"    # Reduced from 256Mi
+              cpu: "50m"         # Reduced from 100m
             limits:
-              memory: "1Gi"
-              cpu: "500m"
+              memory: "512Mi"    # Reduced from 1Gi - PostgreSQL will auto-tune
+              cpu: "250m"        # Reduced from 500m
+          # === ADDITIONAL OPTIMIZATIONS ===
+          livenessProbe:
+            exec:
+              command:
+                - sh
+                - -c
+                - exec pg_isready -h 127.0.0.1 -U $POSTGRES_USER
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+          readinessProbe:
+            exec:
+              command:
+                - sh
+                - -c
+                - exec pg_isready -h 127.0.0.1 -U $POSTGRES_USER
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            timeoutSeconds: 3
+          # === SECURITY CONTEXT ===
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1001
+            allowPrivilegeEscalation: false
       volumes:
         - name: postgres-data
           persistentVolumeClaim:
             claimName: postgres-pvc
+      # === POD RESOURCES ===
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1001
+        fsGroup: 1001
 ---
 apiVersion: v1
 kind: Service
